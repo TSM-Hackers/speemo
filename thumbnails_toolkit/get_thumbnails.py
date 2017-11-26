@@ -1,6 +1,8 @@
 """Get thumbnail given a picture"""
 import time
 import requests
+import os
+from .camera_capture import capture_snapshot
 
 
 _region = 'westcentralus'  # Here you enter the region of your subscription
@@ -56,7 +58,7 @@ def processRequest(json, data, headers, params):
     return result
 
 
-def get_thumbnail(raw_image):
+def get_microsoft_thumbnail(raw_image):
     """Get the raw data for image using MICoft API"""
 
     # Computer Vision parameters
@@ -74,3 +76,15 @@ def get_thumbnail(raw_image):
 
     result = processRequest(json, raw_image, headers, params)
     return result
+
+
+def get_thumbnail():
+    """Get a thumbnail from the camera"""
+    filename = "temp_image.jpg"
+    img = capture_snapshot(filename)
+    with open(filename, 'rb') as f:
+        data = f.read()
+    os.remove(filename)
+
+    thumb = get_microsoft_thumbnail(data)
+    return thumb
