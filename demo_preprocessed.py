@@ -13,32 +13,37 @@ from wx.lib.pubsub import pub
 
 dict_id2name= {"e640526c-fd2c-415e-92ae-920f23f6c959":"Jonas",
         "0ba77bb5-d1d8-4f5c-ac7c-c0563c25046c": "Jacek",
-        "a1237727-360d-450f-b79f-5abef984dcee": "Jonas"}
+        "a1237727-360d-450f-b79f-5abef984dcee": "Eduardo"}
 
 class DemoPreprocessor:
-    def __init__(self, read_orig_audio_file_path, prof_ids, chunk_size):
+    def __init__(self, read_orig_audio_file_path, chunk_size):
         self.orig_audio_file_path = read_orig_audio_file_path
         self.audio_file_paths= []
         audio_chunk_file_paths = self.chunk_original_wav(chunk_size)
         for fp in audio_chunk_file_paths:
             self.audio_file_paths.append(path.join(path.dirname(path.realpath(__file__)), fp))
-        self.prof_ids = prof_ids
-        self.text_results = []
-        self.speaker_results = []
-        self.timestamps = [0]
+        self.prof_ids = list(dict_id2name.values())
+        self.data = []
         self.chunk_size = chunk_size
 
     def run(self):
         for c, sound_file in enumerate(self.audio_file_paths[:-1]):
             # use the audio file as the audio source
             r = sr.Recognizer()
+            prev_timestamp = 0
             with sr.AudioFile(sound_file) as source:
                 audio = r.record(source)  # read the entire audio file
-                self.text_results.append(self.get_text_from_speech(audio))
-                self.speaker_results.append(self.get_speaker_from_wav(sound_file))
-                self.timestamps.append(self.timestamps[-1] + self.chunk_size) 
+                speaker_result = self.get_speaker_from_wav(sound_file)
+                timestamp = prev_timestamp + self.chunk_size
+                text_result = self.get_text_from_speech(audio)
+                speaker_name = "" 
+                if speaker_result['Identified Speaker'] == "00000000-0000-0000-0000-000000000000":
+                    speaker_name = "Undetermined"
+                else:
+                    speaker_name = dict_id2name[speaker_result['Identified Speaker']]
+                self.data.append({"user": speaker_name, "dt": timestamp/1000., "text": text_result})
+                prev_timestamp = timestamp
                 wx.CallAfter(pub.sendMessage, 'analyze.update', message=c/(len(self.audio_file_paths)-1)*100)
-            del self.timestamps[0]
 
     def get_text_from_speech(self, audio):
         BING_KEY = "34fa73133d304049a259f06ffe6ef213"  # Microsoft Bing Voice Recognition API keys 32-character lowercase hexadecimal strings
@@ -52,7 +57,7 @@ class DemoPreprocessor:
     
     def get_speaker_from_wav(self, wav_fname):
         BING_KEY = "dfe8481d30814fa296829b9e6b3d6842"  # Microsoft Bing Voice Recognition API keys 32-character lowercase hexadecimal strings
-        speaker_res = identify_file(BING_KEY, wav_fname, "true", list(self.prof_ids.keys()))
+        speaker_res = identify_file(BING_KEY, wav_fname, "true", list(dict_id2name.keys()))
         return speaker_res
     
     def chunk_original_wav(self, chunk_length):
@@ -74,7 +79,6 @@ class DemoPreprocessor:
         return pickle.load(open(filepath, "rb"))
 
 if __name__ == "__main__":
-    demo_pp = demo_preprocessor("EmoFile.wav", dict_id2name, 4000)
+    demo_pp = demo_preprocessor("EmoFile.wav", 4000)
     demo_pp.run()
-    print(demo_pp.text_results)
-    print(demo_pp.speaker_results)
+    print(demo_pp.data)
