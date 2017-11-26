@@ -12,7 +12,7 @@ import numpy as np
 import random
 import colorsys
 from wx.lib.pubsub import pub
-
+import demo_preprocessed as dp
 STATIC_PATH = "static/"
 
 
@@ -97,6 +97,7 @@ class RecordWindow(wx.Frame):
         self.Bind(wx.EVT_TIMER, self.on_update, self.timer)
         self.Bind(wx.EVT_BUTTON, self.on_cancel)
         self.current_time_interval = 0
+        self.record_data = record_data
 
     def on_cancel(self, e):
         self.timer.Stop()
@@ -111,16 +112,15 @@ class RecordWindow(wx.Frame):
             self.start_btn_img = wx.Image(os.path.join(STATIC_PATH, "pause.png"))
             self.start_btn.SetBitmap(self.start_btn_img.ConvertToBitmap())
             self.start_btn_state = SPEECH_RUNNING
-            current_data = DATA[self.current_time_interval]
+            current_data = self.record_data[self.current_time_interval]
             self.message_display.write_text(current_data["user"], current_data["text"])
             self.timer.Start(current_data["dt"]*SECS2MILLIS)
             pub.sendMessage("user.activate", message=current_data["user"])
 
     def on_update(self, e):
-        print (len(DATA), self.current_time_interval)
-        if self.current_time_interval < len(DATA)-1:
+        if self.current_time_interval < len(self.record_data)-1:
             self.current_time_interval += 1
-            current_data = DATA[self.current_time_interval]
+            current_data = self.record_data[self.current_time_interval]
             self.message_display.write_text(current_data["user"], current_data["text"])
             self.timer.Start(current_data["dt"]*SECS2MILLIS)
             pub.sendMessage("user.activate", message=current_data["user"])
@@ -139,9 +139,6 @@ class AnalyzeProgressDialog(wx.ProgressDialog):
 
     def _onUpdate(self, message):
         self.Update(message)
-
-
-
 
 
 
@@ -271,20 +268,21 @@ class MainTab(wx.Panel):
             if fileDialog.ShowModal() == wx.ID_CANCEL:
                 return     # the user changed their mind
             pathname = fileDialog.GetPath()
-            #SAve to file
+        message.save(pathname)
 
 
     def on_record_click(self, e):
+        pathname = ""
         with wx.FileDialog(self, "Open an analysis file...", wildcard="*",
                            style=wx.FD_OPEN|wx.FD_FILE_MUST_EXIST) as fileDialog:
 
             if fileDialog.ShowModal() == wx.ID_CANCEL:
                 return     # the user changed their mind
             pathname = fileDialog.GetPath()
-            #Load file
 
+        self.record_data = dp.DemoPreprocessor.read(pathname) 
         self.user_dock_window = UserDockWindow(None, USERS)
-        self.record_window = RecordWindow(None, USERS, DATA)
+        self.record_window = RecordWindow(None, USERS, self.record_data)
         self.user_dock_window.Show()
         self.record_window.Show()
 	
@@ -297,17 +295,17 @@ class MainTab(wx.Panel):
                 return     # the user changed their mind
 
             # Proceed loading the file chosen by the user
-            pathname = fileDialog.GetPath()
-        self.setup_analize_dialog = AnalyzeProgressDialog(self)
+        pathname = fileDialog.GetPath()
+        self.setup_analize_dialog = AnalyzeProgressDialog(self) 
         def analyze_conversation(pathname):
-            wx.CallAfter(pub.sendMessage, 'analyze.update', message=50)
-            time.sleep(2)
+            processor = dp.DemoPreprocessor(pathname, dp.dict_id2name, 4000)
+            processor.run()
             wx.CallAfter(pub.sendMessage, 'analyze.update', message=100)
-            analysis_obj = ["HOLA"]
-            wx.CallAfter(pub.sendMessage, 'save.analysis', message=analysis_obj)
+            wx.CallAfter(pub.sendMessage, 'save.analysis', message=processor)
 
         thread = threading.Thread(target=analyze_conversation, args=(pathname,))
         thread.start()
+        
      
 class UsersTab(wx.Panel):
     def __init__(self, parent):

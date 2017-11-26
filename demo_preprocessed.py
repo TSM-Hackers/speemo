@@ -7,8 +7,15 @@ from IdentifyFile import identify_file
 from pydub import AudioSegment
 from pydub.utils import make_chunks
 import pickle
+import wx
+from wx.lib.pubsub import pub
 
-class demo_preprocessor:
+
+dict_id2name= {"e640526c-fd2c-415e-92ae-920f23f6c959":"Jonas",
+        "0ba77bb5-d1d8-4f5c-ac7c-c0563c25046c": "Jacek",
+        "a1237727-360d-450f-b79f-5abef984dcee": "Jonas"}
+
+class DemoPreprocessor:
     def __init__(self, read_orig_audio_file_path, prof_ids, chunk_size):
         self.orig_audio_file_path = read_orig_audio_file_path
         self.audio_file_paths= []
@@ -22,7 +29,7 @@ class demo_preprocessor:
         self.chunk_size = chunk_size
 
     def run(self):
-        for sound_file in self.audio_file_paths[:-1]:
+        for c, sound_file in enumerate(self.audio_file_paths[:-1]):
             # use the audio file as the audio source
             r = sr.Recognizer()
             with sr.AudioFile(sound_file) as source:
@@ -30,8 +37,8 @@ class demo_preprocessor:
                 self.text_results.append(self.get_text_from_speech(audio))
                 self.speaker_results.append(self.get_speaker_from_wav(sound_file))
                 self.timestamps.append(self.timestamps[-1] + self.chunk_size) 
-            del self.timestamps[-1]
-            self.save()
+                wx.CallAfter(pub.sendMessage, 'analyze.update', message=c/(len(self.audio_file_paths)-1)*100)
+            del self.timestamps[0]
 
     def get_text_from_speech(self, audio):
         BING_KEY = "34fa73133d304049a259f06ffe6ef213"  # Microsoft Bing Voice Recognition API keys 32-character lowercase hexadecimal strings
@@ -59,16 +66,14 @@ class demo_preprocessor:
             print("exporting", chunk_name, chunk.export(chunk_name, format="wav"))
         return chunk_names
 
-    def save(self):
-        pickle.dump(demo_pp, open("demo_pp.speemo", "wb"))
+    def save(self, filepath):
+        pickle.dump(self, open(filepath, "wb"))
 
-    def read(self, f):
-        return pickle.load(f)
+    @staticmethod
+    def read(filepath):
+        return pickle.load(open(filepath, "rb"))
 
 if __name__ == "__main__":
-    dict_id2name= {"e640526c-fd2c-415e-92ae-920f23f6c959":"Jonas",
-            "0ba77bb5-d1d8-4f5c-ac7c-c0563c25046c": "Jacek",
-            "a1237727-360d-450f-b79f-5abef984dcee": "Jonas"}
     demo_pp = demo_preprocessor("EmoFile.wav", dict_id2name, 4000)
     demo_pp.run()
     print(demo_pp.text_results)
