@@ -46,7 +46,7 @@ class UserMessageDisplay(rt.RichTextCtrl):
         self.BeginTextColour(self.users_textcolour[user])
         delta_t = abs(time.time() - self.last_msg_time)
         self.last_msg_time = time.time()
-        if self.current_user != user or delta_t > MAX_MSG_PAUSE:
+        if self.current_user != user or delta_t > MAX_MSG_PAUSE and user != "Undefined":
             self.SetInsertionPoint(-1)
             timestamp = datetime.datetime.fromtimestamp(self.last_msg_time).strftime('%Y-%m-%d %H:%M:%S')
             self.LineBreak()
@@ -61,6 +61,9 @@ class UserMessageDisplay(rt.RichTextCtrl):
             self.LineBreak()
             self.SetInsertionPoint(p)
         else:
+            if user == "Undefined":
+                self.EndTextColour()
+                self.BeginTextColour((128,128,128))
             self.WriteText(text)
         self.EndTextColour()
 
@@ -114,6 +117,7 @@ class RecordWindow(wx.Frame):
         self.current_time_interval = 0
         self.record_data = record_data
         self.player = WavPlayer()
+        self.timer_elapsed = 0.0
 
     def on_cancel(self, e):
         self.timer.Stop()
@@ -125,12 +129,15 @@ class RecordWindow(wx.Frame):
             self.start_btn_img = wx.Image(os.path.join(STATIC_PATH, "play.png"))
             self.start_btn.SetBitmap(self.start_btn_img.ConvertToBitmap())
             self.start_btn_state = SPEECH_STOPPED
+            self.timer_elapsed = self.timer_elapsed - time.time()
+            #self.timer.Stop()
         else:
             self.start_btn_img = wx.Image(os.path.join(STATIC_PATH, "pause.png"))
             self.start_btn.SetBitmap(self.start_btn_img.ConvertToBitmap())
             self.start_btn_state = SPEECH_RUNNING
             current_data = self.record_data[self.current_time_interval]
             self.message_display.write_text(current_data["user"], current_data["text"])
+            self.timer_elapsed = time.time()
             self.timer.Start(current_data["dt"]*SECS2MILLIS)
             pub.sendMessage("user.activate", message=current_data["user"])
 
