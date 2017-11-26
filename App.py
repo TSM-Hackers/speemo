@@ -281,8 +281,8 @@ class MainTab(wx.Panel):
             pathname = fileDialog.GetPath()
 
         self.record_data = dp.DemoPreprocessor.read(pathname) 
-        self.user_dock_window = UserDockWindow(None, USERS)
-        self.record_window = RecordWindow(None, USERS, self.record_data)
+        self.user_dock_window = UserDockWindow(None, self.record_data.prof_ids)
+        self.record_window = RecordWindow(None, self.record_data.prof_ids, self.record_data.data)
         self.user_dock_window.Show()
         self.record_window.Show()
 	
@@ -298,7 +298,7 @@ class MainTab(wx.Panel):
         pathname = fileDialog.GetPath()
         self.setup_analize_dialog = AnalyzeProgressDialog(self) 
         def analyze_conversation(pathname):
-            processor = dp.DemoPreprocessor(pathname, dp.dict_id2name, 4000)
+            processor = dp.DemoPreprocessor(pathname, 4000)
             processor.run()
             wx.CallAfter(pub.sendMessage, 'analyze.update', message=100)
             wx.CallAfter(pub.sendMessage, 'save.analysis', message=processor)

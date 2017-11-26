@@ -5,7 +5,7 @@ import speech_recognition as sr
 import datetime
 import sys
 import os
-sys.path.append('../../Cognitive-SpeakerRecognition-Python/Identification')
+sys.path.append('third_party/Identification')
 from IdentifyFile import identify_file
 
 def get_text_from_speech(audio):
@@ -59,7 +59,7 @@ with m as source:
     r.adjust_for_ambient_noise(source)  # we only need to calibrate once, before we start listening
 print("Background adjusting done")
 
-# block until all tasks are done
+# block untsys.path.append('../../Cognitive-SpeakerRecognition-Python/Identification')
 #text_q.join()
 #speaker_q.join()
 
