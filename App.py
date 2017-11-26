@@ -71,6 +71,21 @@ DATA = [{"user": "Jonas", "dt": 5, "text": "Hola me llamo Jonas"}, {"user": "Edu
         {"user": "Jacek", "dt": 6, "text": "Hola me llamo Jacek"}]
 USERS = ["Jonas", "Jacek", "Eduardo"]
 SECS2MILLIS = 1000
+import pyglet
+class WavPlayer: 
+    def __init__(self):
+        self.thread = None 
+        self.audio = None
+
+    def play_file(self, pathname):
+        self.audio = pyglet.media.load(pathname)
+        self.thread = threading.Thread(target=self._play)
+        self.thread.start()
+
+    def _play(self):
+        self.audio.play()
+
+
 
 class RecordWindow(wx.Frame):
     def __init__(self, parent, users=None, record_data=None, title="Conversation"):
@@ -98,12 +113,14 @@ class RecordWindow(wx.Frame):
         self.Bind(wx.EVT_BUTTON, self.on_cancel)
         self.current_time_interval = 0
         self.record_data = record_data
+        self.player = WavPlayer()
 
     def on_cancel(self, e):
         self.timer.Stop()
         pub.sendMessage("close.recording")
 
     def on_start(self, e):
+        self.player.play_file("EmoFile.wav")
         if self.start_btn_state == SPEECH_RUNNING:
             self.start_btn_img = wx.Image(os.path.join(STATIC_PATH, "play.png"))
             self.start_btn.SetBitmap(self.start_btn_img.ConvertToBitmap())
@@ -282,7 +299,7 @@ class MainTab(wx.Panel):
 
         self.record_data = dp.DemoPreprocessor.read(pathname) 
         self.user_dock_window = UserDockWindow(None, USERS)
-        self.record_window = RecordWindow(None, USERS, self.record_data)
+        self.record_window = RecordWindow(None, USERS, DATA)
         self.user_dock_window.Show()
         self.record_window.Show()
 	
