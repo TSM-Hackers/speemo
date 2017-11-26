@@ -151,7 +151,7 @@ class RecordWindow(wx.Frame):
             self.message_display.write_text(current_data["user"], current_data["text"])
             self.timer_elapsed = time.time()
             self.timer.Start(current_data["dt"] * SECS2MILLIS)
-            pub.sendMessage("user.activate", message=current_data["user"])
+            pub.sendMessage("user.activate", message=current_data)
 
     def on_update(self, e):
         if self.current_time_interval < len(self.record_data) - 1:
@@ -214,8 +214,8 @@ class UserDockElement(wx.Panel):
         # 0: neutral, 1: happy, 2: sad, 3: surprise, 4: anger, 5: fear
         scaling_factors = np.array(emotions_factors)
 
-        static_hex_pnts = np.array([ [32, 305], [167,72], [434, 72], [568, 305], [434, 536], [167, 536]] )/2.0
-        hex_center = np.array([150, 150])
+        static_hex_pnts = np.array([ [32, 305], [167,72], [434, 72], [568, 305], [434, 536], [167, 536]] )/2.0 + np.array([30.0,0.0])
+        hex_center = np.array([150+30.0, 150])
         vectors = static_hex_pnts - hex_center
         for i, s in enumerate(scaling_factors):
             vectors[i, :] = vectors[i, :] * s
