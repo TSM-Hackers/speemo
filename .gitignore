@@ -2,7 +2,6 @@
 .vector_cache
 dataset/*.csv
 dataset/*.pkl
-trained_model.pkl
 workspace*
 chunk*.wav
 
