@@ -43,10 +43,11 @@ class UserMessageDisplay(rt.RichTextCtrl):
 
 
     def write_text(self, user, text): 
-        self.BeginTextColour(self.users_textcolour[user])
+        if user != "Undetermined":
+            self.BeginTextColour(self.users_textcolour[user])
         delta_t = abs(time.time() - self.last_msg_time)
         self.last_msg_time = time.time()
-        if self.current_user != user or delta_t > MAX_MSG_PAUSE and user != "Undefined":
+        if self.current_user != user or delta_t > MAX_MSG_PAUSE and user != "Undetermined":
             self.SetInsertionPoint(-1)
             timestamp = datetime.datetime.fromtimestamp(self.last_msg_time).strftime('%Y-%m-%d %H:%M:%S')
             self.LineBreak()
@@ -62,7 +63,6 @@ class UserMessageDisplay(rt.RichTextCtrl):
             self.SetInsertionPoint(p)
         else:
             if user == "Undefined":
-                self.EndTextColour()
                 self.BeginTextColour((128,128,128))
             self.WriteText(text)
         self.EndTextColour()
@@ -147,7 +147,8 @@ class RecordWindow(wx.Frame):
             current_data = self.record_data[self.current_time_interval]
             self.message_display.write_text(current_data["user"], current_data["text"])
             self.timer.Start(current_data["dt"]*SECS2MILLIS)
-            pub.sendMessage("user.activate", message=current_data["user"])
+            if current_data["user"] != "Undetermined":
+                pub.sendMessage("user.activate", message=current_data["user"])
         else:
             self.timer.Stop()
 
