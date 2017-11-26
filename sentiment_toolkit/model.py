@@ -8,7 +8,7 @@ from torch.autograd import Variable
 class MySecondRNN(nn.Module):
     """More involved RNN network"""
 
-    def __init__(self, n_input, n_hidden, n_layers, n_output):
+    def __init__(self, n_input, n_hidden, n_layers, n_output, drop_p=0.2):
         """Summary
 
         Parameters
@@ -25,9 +25,11 @@ class MySecondRNN(nn.Module):
         super().__init__()
         self.n_hidden = n_hidden
         self.n_layers = n_layers
+        self.drop_p = drop_p
 
-        self.RNN = nn.GRU(n_input, n_hidden, n_layers)
-        self.hidden2out = nn.Linear(n_hidden, n_output)
+        self.RNN = nn.LSTM(n_input, n_hidden, n_layers, dropout=drop_p)
+        self.dropout = nn.Dropout(p=drop_p)
+        self.rnn2output = nn.Linear(n_hidden, n_output)
 
     def forward(self, x):
         """All of the steps forward
@@ -45,10 +47,15 @@ class MySecondRNN(nn.Module):
         seq_len, batch_size, num_features = x.size()
         if next(self.parameters()).is_cuda:
             h_0 = Variable(torch.zeros(self.n_layers, batch_size, self.n_hidden).cuda())
+            c_0 = Variable(torch.zeros(self.n_layers, batch_size, self.n_hidden).cuda())
         else:
             h_0 = Variable(torch.zeros(self.n_layers, batch_size, self.n_hidden))
-        out, *hidden = self.RNN(x, h_0)
-        output = self.hidden2out(out[-1])
+            c_0 = Variable(torch.zeros(self.n_layers, batch_size, self.n_hidden))
+        out, *hidden = self.RNN(x, (h_0, c_0))
+        # out, *hidden = self.RNN(x, h_0)
+
+        output = self.dropout(out[-1])
+        output = self.rnn2output(output)
 
         return output
 
