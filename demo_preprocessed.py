@@ -12,7 +12,8 @@ from wx.lib.pubsub import pub
 
 
 dict_id2name= {"e640526c-fd2c-415e-92ae-920f23f6c959":"Jonas",
-        "0ba77bb5-d1d8-4f5c-ac7c-c0563c25046c": "Jacek",
+        "039594a5-0228-46af-bac8-e07f4b709cde": "Jacek",
+
         "a1237727-360d-450f-b79f-5abef984dcee": "Eduardo"}
 
 class DemoPreprocessor:
