@@ -211,10 +211,10 @@ class UserDockElement(wx.Panel):
         self.SetSizer(self.main_sizer)
 
     def update_hexagon(self, emotions_factors):
-        # 0: happyness, 1: neutra, 2: surprise, 3: sad, 4: anger, 5: fear
+        # 0: neutral, 1: happy, 2: sad, 3: surprise, 4: anger, 5: fear
         scaling_factors = np.array(emotions_factors)
-        static_hex_pnts = np.array([[167, 72], [434, 72], [568, 305], [
-                                   434, 536], [167, 536], [32, 305]]) / 2.0
+
+        static_hex_pnts = np.array([ [32, 305], [167,72], [434, 72], [568, 305], [434, 536], [167, 536]] )/2.0
         hex_center = np.array([150, 150])
         vectors = static_hex_pnts - hex_center
         for i, s in enumerate(scaling_factors):
