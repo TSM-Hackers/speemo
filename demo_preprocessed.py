@@ -2,7 +2,7 @@ import speech_recognition as sr
 from os import path
 import os
 import sys
-sys.path.append('../../Cognitive-SpeakerRecognition-Python/Identification')
+sys.path.append('third_party/Identification')
 from IdentifyFile import identify_file
 from pydub import AudioSegment
 from pydub.utils import make_chunks
@@ -22,7 +22,7 @@ class demo_preprocessor:
         self.chunk_size = chunk_size
 
     def run(self):
-        for sound_file in self.audio_file_paths[-2:-1]:
+        for sound_file in self.audio_file_paths[:-1]:
             # use the audio file as the audio source
             r = sr.Recognizer()
             with sr.AudioFile(sound_file) as source:
@@ -69,7 +69,7 @@ if __name__ == "__main__":
     dict_id2name= {"e640526c-fd2c-415e-92ae-920f23f6c959":"Jonas",
             "0ba77bb5-d1d8-4f5c-ac7c-c0563c25046c": "Jacek",
             "a1237727-360d-450f-b79f-5abef984dcee": "Jonas"}
-    demo_pp = demo_preprocessor("../EmoFile.wav", dict_id2name, 4000)
+    demo_pp = demo_preprocessor("EmoFile.wav", dict_id2name, 4000)
     demo_pp.run()
     print(demo_pp.text_results)
     print(demo_pp.speaker_results)

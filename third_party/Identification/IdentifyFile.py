@@ -49,9 +49,10 @@ def identify_file(subscription_key, file_path, force_short_audio, profile_ids):
         file_path, profile_ids,
         force_short_audio.lower() == "true")
 
-    print('Identified Speaker = {0}'.format(identification_response.get_identified_profile_id()))
-    print('Confidence = {0}'.format(identification_response.get_confidence()))
-    return 'Identified Speaker = {0}'.format(identification_response.get_identified_profile_id()), 'Confidence = {0}'.format(identification_response.get_confidence())
+    #print('Identified Speaker = {0}'.format(identification_response.get_identified_profile_id()))
+    #print('Confidence = {0}'.format(identification_response.get_confidence()))
+    return {"Identified Speaker": "{0}".format(identification_response.get_identified_profile_id()),
+            "Confidence" : "{0}".format(identification_response.get_confidence())}
 
 if __name__ == "__main__":
     if len(sys.argv) < 5:

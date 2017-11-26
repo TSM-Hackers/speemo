@@ -4,6 +4,7 @@ dataset/*.csv
 dataset/*.pkl
 trained_model.pkl
 workspace*
+chunk*.wav
 
 
 # Byte-compiled / optimized / DLL files
