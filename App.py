@@ -186,12 +186,12 @@ class UserDockElement(wx.Panel):
         self.user_name = user_name
         self.user_panel = wx.Panel(self, -1)
         self.user_img = wx.Image(os.path.join(STATIC_PATH, "%s.jpeg" % user_name))
-        self.user_img = self.user_img.Scale(width=self.user_img_size[0],
-                                            height=self.user_img_size[1], quality=IMG_QUALITY)
-        self.user_bitmap = wx.StaticBitmap(self.user_panel, wx.SUNKEN_BORDER |
-                                           wx.ID_ANY, self.user_img.ConvertToBitmap())
-        self.hexagon_img_size = (300, 300)
-        self.hexagon_img_base = Image.open(os.path.join(STATIC_PATH, "hexagon.png"))
+
+        self.user_img = self.user_img.Scale(width=self.user_img_size[0], 
+                                       height=self.user_img_size[1], quality=IMG_QUALITY)
+        self.user_bitmap = wx.StaticBitmap(self.user_panel,wx.SUNKEN_BORDER| wx.ID_ANY, self.user_img.ConvertToBitmap())
+        self.hexagon_img_size = (300,300)
+        self.hexagon_img_base = Image.open(os.path.join(STATIC_PATH, "hexagon2.png"))
         self.hexagon_img = self.PIL2wxImage(self.hexagon_img_base)
         self.hexagon_panel = wx.Panel(self, -1)
         self.hexagon_bitmap = wx.StaticBitmap(
@@ -225,8 +225,9 @@ class UserDockElement(wx.Panel):
         del context
         wximage = self.PIL2wxImage(self.hexagon_img_base)
         self.hexagon_bitmap.SetBitmap(wximage.ConvertToBitmap())
-        # TODO: Change this to avoid reloading
-        self.hexagon_img_base = Image.open(os.path.join(STATIC_PATH, "hexagon.png"))
+
+        #TODO: Change this to avoid reloading
+        self.hexagon_img_base = Image.open(os.path.join(STATIC_PATH, "hexagon2.png"))
 
     def PIL2wxImage(self, pilImage):
         wximage = wx.Image(*pilImage.size)
