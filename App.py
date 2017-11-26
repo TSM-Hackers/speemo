@@ -43,10 +43,11 @@ class UserMessageDisplay(rt.RichTextCtrl):
 
 
     def write_text(self, user, text): 
-        self.BeginTextColour(self.users_textcolour[user])
+        if user != "Undetermined":
+            self.BeginTextColour(self.users_textcolour[user])
         delta_t = abs(time.time() - self.last_msg_time)
         self.last_msg_time = time.time()
-        if self.current_user != user or delta_t > MAX_MSG_PAUSE:
+        if self.current_user != user or delta_t > MAX_MSG_PAUSE and user != "Undetermined":
             self.SetInsertionPoint(-1)
             timestamp = datetime.datetime.fromtimestamp(self.last_msg_time).strftime('%Y-%m-%d %H:%M:%S')
             self.LineBreak()
@@ -61,6 +62,8 @@ class UserMessageDisplay(rt.RichTextCtrl):
             self.LineBreak()
             self.SetInsertionPoint(p)
         else:
+            if user == "Undefined":
+                self.BeginTextColour((128,128,128))
             self.WriteText(text)
         self.EndTextColour()
 
@@ -71,6 +74,21 @@ DATA = [{"user": "Jonas", "dt": 5, "text": "Hola me llamo Jonas"}, {"user": "Edu
         {"user": "Jacek", "dt": 6, "text": "Hola me llamo Jacek"}]
 USERS = ["Jonas", "Jacek", "Eduardo"]
 SECS2MILLIS = 1000
+import pyglet
+class WavPlayer: 
+    def __init__(self):
+        self.thread = None 
+        self.audio = None
+
+    def play_file(self, pathname):
+        self.audio = pyglet.media.load(pathname)
+        self.thread = threading.Thread(target=self._play)
+        self.thread.start()
+
+    def _play(self):
+        self.audio.play()
+
+
 
 class RecordWindow(wx.Frame):
     def __init__(self, parent, users=None, record_data=None, title="Conversation"):
@@ -98,22 +116,28 @@ class RecordWindow(wx.Frame):
         self.Bind(wx.EVT_BUTTON, self.on_cancel)
         self.current_time_interval = 0
         self.record_data = record_data
+        self.player = WavPlayer()
+        self.timer_elapsed = 0.0
 
     def on_cancel(self, e):
         self.timer.Stop()
         pub.sendMessage("close.recording")
 
     def on_start(self, e):
+        self.player.play_file("EmoFile.wav")
         if self.start_btn_state == SPEECH_RUNNING:
             self.start_btn_img = wx.Image(os.path.join(STATIC_PATH, "play.png"))
             self.start_btn.SetBitmap(self.start_btn_img.ConvertToBitmap())
             self.start_btn_state = SPEECH_STOPPED
+            self.timer_elapsed = self.timer_elapsed - time.time()
+            #self.timer.Stop()
         else:
             self.start_btn_img = wx.Image(os.path.join(STATIC_PATH, "pause.png"))
             self.start_btn.SetBitmap(self.start_btn_img.ConvertToBitmap())
             self.start_btn_state = SPEECH_RUNNING
             current_data = self.record_data[self.current_time_interval]
             self.message_display.write_text(current_data["user"], current_data["text"])
+            self.timer_elapsed = time.time()
             self.timer.Start(current_data["dt"]*SECS2MILLIS)
             pub.sendMessage("user.activate", message=current_data["user"])
 
@@ -123,7 +147,8 @@ class RecordWindow(wx.Frame):
             current_data = self.record_data[self.current_time_interval]
             self.message_display.write_text(current_data["user"], current_data["text"])
             self.timer.Start(current_data["dt"]*SECS2MILLIS)
-            pub.sendMessage("user.activate", message=current_data["user"])
+            if current_data["user"] != "Undetermined":
+                pub.sendMessage("user.activate", message=current_data["user"])
         else:
             self.timer.Stop()
 
