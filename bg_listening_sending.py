@@ -8,20 +8,29 @@ import os
 sys.path.append('third_party/Identification')
 from IdentifyFile import identify_file
 
+dict_id2name= {"e640526c-fd2c-415e-92ae-920f23f6c959":"Jonas",
+        "0ba77bb5-d1d8-4f5c-ac7c-c0563c25046c": "Jacek",
+        "a1237727-360d-450f-b79f-5abef984dcee": "Eduardo"}
+
 def get_text_from_speech(audio):
     BING_KEY = "34fa73133d304049a259f06ffe6ef213"  # Microsoft Bing Voice Recognition API keys 32-character lowercase hexadecimal strings
     try:
         return r.recognize_bing(audio, key=BING_KEY)
     except sr.UnknownValueError:
-        return "Microsoft Bing Voice Recognition could not understand audio"
+        return "Audio not understood"
     except sr.RequestError as e:
         return "Could not request results from Microsoft Bing Voice Recognition service; {0}".format(e)
 
 def get_speaker_from_wav(wav_fname, profile_ids):
     BING_KEY = "dfe8481d30814fa296829b9e6b3d6842"  # Microsoft Bing Voice Recognition API keys 32-character lowercase hexadecimal strings
-    speaker_res = identify_file(BING_KEY, wav_fname, "true", profile_ids[:])
+    speaker_result = identify_file(BING_KEY, wav_fname, "true", profile_ids[:])
+    speaker_name = ""
+    if speaker_result['Identified Speaker'] == "00000000-0000-0000-0000-000000000000":
+        speaker_name = "Undetermined"
+    else:
+        speaker_name = dict_id2name[speaker_result['Identified Speaker']]
     os.remove(wav_fname)
-    return speaker_res
+    return speaker_name
     
 text_q = queue.Queue()
 speaker_q= queue.Queue()
@@ -59,10 +68,6 @@ with m as source:
     r.adjust_for_ambient_noise(source)  # we only need to calibrate once, before we start listening
 print("Background adjusting done")
 
-# block untsys.path.append('../../Cognitive-SpeakerRecognition-Python/Identification')
-#text_q.join()
-#speaker_q.join()
-
 while True:
     with m as source:
         audio = r.listen(m, phrase_time_limit = 4)
@@ -74,9 +79,3 @@ while True:
             speaker_q.put(fname)
         print("speakers: ", speaker_results)
         print("text: ", text_results)
-    
-## stop workers
-#for i in range(num_worker_threads):
-#    q.put(None)
-#for t in threads:
-#    t.join()
