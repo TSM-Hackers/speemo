@@ -9,7 +9,7 @@ sys.path.append('third_party/Identification')
 from IdentifyFile import identify_file
 
 dict_id2name= {"e640526c-fd2c-415e-92ae-920f23f6c959":"Jonas",
-        "0ba77bb5-d1d8-4f5c-ac7c-c0563c25046c": "Jacek",
+        "039594a5-0228-46af-bac8-e07f4b709cde": "Jacek",
         "a1237727-360d-450f-b79f-5abef984dcee": "Eduardo"}
 
 def get_text_from_speech(audio):
@@ -24,13 +24,13 @@ def get_text_from_speech(audio):
 def get_speaker_from_wav(wav_fname, profile_ids):
     BING_KEY = "dfe8481d30814fa296829b9e6b3d6842"  # Microsoft Bing Voice Recognition API keys 32-character lowercase hexadecimal strings
     speaker_result = identify_file(BING_KEY, wav_fname, "true", profile_ids[:])
-    speaker_name = ""
-    if speaker_result['Identified Speaker'] == "00000000-0000-0000-0000-000000000000":
-        speaker_name = "Undetermined"
-    else:
-        speaker_name = dict_id2name[speaker_result['Identified Speaker']]
+    #speaker_name = ""
+    #if speaker_result['Identified Speaker'] == "00000000-0000-0000-0000-000000000000":
+    #    speaker_name = "Undetermined"
+    #else:
+    speaker_name = dict_id2name[speaker_result['Identified Speaker']]
     os.remove(wav_fname)
-    return speaker_name
+    return speaker_result
     
 text_q = queue.Queue()
 speaker_q= queue.Queue()
