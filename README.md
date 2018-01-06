@@ -1,10 +1,12 @@
 # Speemo
-A software for speech analysis using machine learning and signal processing.
+Software for speech analysis using machine learning and signal processing. This app was developped at the 2017 Oxford Hack event. App.py links together a speech recognition element to obtain text from speech and then runs it through a trained neural net to evaluate its emotional value. 
 
 ![alt text](static/snapshot.png)
 
+## Speech and speaker recognition
+The SpeechRecognition python package in conjunction with the free Bing API is used for speech and speaker recognition. The SpeechRecognition interfaces well with other speech recognition APIs, online as well as offline. This code could therefore be altered to use any preferred APIs supported by the SpeechRecognition package. PyDub is used for simple audio file manipulations.
 
-## Sentiment analysis of text
+## Sentiment analysis of text with machine learning
 
 The model is composed of a Recurrent NN with 512 LSTM hidden units connected to 6 output units by a Linear Layer. Throughput the training, dropout ration of 0.5 was used on the LSTM units and Linear Layer. See [twitter-sentiment-analysis] for more details.
 
@@ -38,3 +40,5 @@ Training was performed using an Adam SGD algorithm with early stopping. Best res
    [GloVe]: <https://nlp.stanford.edu/projects/glove/>
    [pyTorch]: <http://pytorch.org/>
    [torchtext]: <https://github.com/pytorch/text>
+   [SpeechRecognition]: <https://pypi.python.org/pypi/SpeechRecognition/>
+   [pydub]: <https://github.com/jiaaro/pydub>
